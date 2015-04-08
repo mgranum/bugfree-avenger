@@ -28,6 +28,7 @@ namespace ConsoleApplication1
             Console.WriteLine("List01 now has {0} ticks", stock.List01.Count);
             Console.WriteLine("List05 now has {0} ticks", stock.List05.Count);
             Console.WriteLine("List15 now has {0} ticks", stock.List15.Count);
+            Console.WriteLine("O: {0}\tC: {1}\tH: {2}\tL: {3}", stock.Open, stock.Close, stock.High, stock.Low);
 
             Console.ReadKey();
         }
