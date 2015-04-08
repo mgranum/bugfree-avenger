@@ -20,9 +20,12 @@ namespace ConsoleApplication1
             List15 = new List<Tick>();
         }
 
-        public bool AddTrade(DateTime timestamp, double price)
+        public void AddTrade(DateTime timestamp, double price)
         {
-            throw new NotImplementedException();
+            var dt01 = Helper.AdjustTime(timestamp, 1);
+            var tick = new Tick() { Timestamp = dt01 };
+
+            List01.Add(tick);
         }
     }
 }
