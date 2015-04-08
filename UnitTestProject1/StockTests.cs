@@ -8,7 +8,7 @@ namespace UnitTestProject1
     public class StockTests
     {
         private Stock stock;
-        private DateTime timestamp;
+        private DateTime timestamp, other_timestamp;
         private DateTime dt01, dt05, dt15;
 
         [TestInitialize]
@@ -16,6 +16,7 @@ namespace UnitTestProject1
         {
             stock = new Stock();
             timestamp = new DateTime(1999, 12, 31, 23, 59, 59);
+            other_timestamp = timestamp.AddSeconds(2);
             dt01 = new DateTime(1999, 12, 31, 23, 59, 0);
             dt05 = new DateTime(1999, 12, 31, 23, 55, 0);
             dt15 = new DateTime(1999, 12, 31, 23, 45, 0);
@@ -97,6 +98,38 @@ namespace UnitTestProject1
             Assert.AreEqual(2.34, stock.List15[0].Open);
             Assert.AreEqual(1.23, stock.List15[0].Close);
 
+        }
+
+        [TestMethod]
+        public void GetHigh_WhenAddedTwoTrades_ReturnsCorrectPrice()
+        {
+            stock.AddTrade(timestamp, 2.34);
+            stock.AddTrade(other_timestamp, 1.23);
+            Assert.AreEqual(2.34, stock.High);
+        }
+
+        [TestMethod]
+        public void GetLow_WhenAddedTwoTrades_ReturnsCorrectPrice()
+        {
+            stock.AddTrade(timestamp, 2.34);
+            stock.AddTrade(other_timestamp, 1.23);
+            Assert.AreEqual(1.23, stock.Low);
+        }
+
+        [TestMethod]
+        public void GetOpen_WhenAddedTwoTrades_ReturnsCorrectPrice()
+        {
+            stock.AddTrade(timestamp, 2.34);
+            stock.AddTrade(other_timestamp, 1.23);
+            Assert.AreEqual(2.34, stock.Open);
+        }
+
+        [TestMethod]
+        public void GetClose_WhenAddedTwoTrades_ReturnsCorrectPrice()
+        {
+            stock.AddTrade(timestamp, 2.34);
+            stock.AddTrade(other_timestamp, 1.23);
+            Assert.AreEqual(1.23, stock.Close);
         }
 
         [TestCleanup]

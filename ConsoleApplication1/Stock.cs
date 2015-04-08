@@ -20,6 +20,36 @@ namespace ConsoleApplication1
             get { return list01; }
         }
 
+        public double High
+        {
+            get
+            {
+                return list01.Max(x => x.High);
+            }
+        }
+
+        public double Low
+        {
+            get
+            {
+                return list01.Min(x => x.Low);
+            }
+        }
+
+        public double Open
+        {
+            get
+            {
+                return list01.First().Open;
+            }
+        }
+        public double Close
+        {
+            get
+            {
+                return list01.Last().Close;
+            }
+        }
 
         public Stock()
         {
