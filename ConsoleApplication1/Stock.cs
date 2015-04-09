@@ -8,6 +8,8 @@ namespace ConsoleApplication1
 {
     public class Stock
     {
+        private double lastPrice;
+
         private List<Tick> list01;
         private List<Tick> list05;
         private List<Tick> list15;
@@ -50,6 +52,7 @@ namespace ConsoleApplication1
                 return list01.Last().Close;
             }
         }
+        public double Wiggle { get; set; }
 
         public Stock()
         {
@@ -60,6 +63,8 @@ namespace ConsoleApplication1
 
         public void AddTrade(DateTime timestamp, double price)
         {
+            lastPrice = price;
+
             var dt01 = Helper.AdjustTime(timestamp, 1);
             AddOrUpdateTick(ref list01, dt01, price);
 
@@ -68,13 +73,15 @@ namespace ConsoleApplication1
 
             var dt15 = Helper.AdjustTime(timestamp, 15);
             AddOrUpdateTick(ref list15, dt15, price);
-
-            //CheckBuyOrSell();
         }
 
         public bool CheckBuy()
         {
-            if (list01.Count >= 3 && list01[list01.Count-1].Trend == 1 && list01[list01.Count - 2].Trend == 1 && list01[list01.Count - 3].Trend < 1)
+            if (list01.Count >= 3 && list01[list01.Count-1].Trend == 1 && 
+                list01[list01.Count - 2].Trend == 1 && 
+                list01[list01.Count - 3].Trend < 1 &&
+                list05.Count > 1 &&
+                list05[list05.Count-1].Trend == 1)
             {
                 // It is a buy!
                 return true;
@@ -84,7 +91,13 @@ namespace ConsoleApplication1
 
         public bool CheckSell()
         {
-            if (list01.Count >= 3 && list01[list01.Count - 1].Trend == -1 && list01[list01.Count - 2].Trend == -1 && list01[list01.Count - 3].Trend > -1)
+
+            if (list01.Count >= 3 && list01[list01.Count - 1].Trend == -1 && 
+                list01[list01.Count - 2].Trend == -1 && 
+                list01[list01.Count - 3].Trend > -1 &&
+                list01[list01.Count - 3].High - list01[list01.Count - 1].Low > Wiggle &&
+                list05.Count > 1 &&
+                list05[list05.Count-1].Trend == -1)
             {
                 // It is a sell!
                 return true;
