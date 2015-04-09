@@ -10,6 +10,11 @@ namespace ConsoleApplication1
     {
         public Dictionary<string, Holding> Holdings { get; set; }
 
+        public Portfolio()
+        {
+            Holdings = new Dictionary<string, Holding>();
+        }
+
         public bool CurrentlyHoldingStock(string ticker)
         {
             return Holdings.ContainsKey(ticker);
