@@ -12,7 +12,7 @@ namespace ConsoleApplication1
             Console.WriteLine("Hello");
             var reader = new StreamReader(File.OpenRead(@"C:\Users\mgr\Source\Repos\bugfree-avenger\ConsoleApplication1\stl-20150407.csv"));
 
-            var stock = new Stock() { Ticker = "STL" };
+            var stock = new Stock() { Ticker = "STL.OSE" };
 
             while (!reader.EndOfStream)
             {
@@ -29,6 +29,35 @@ namespace ConsoleApplication1
             Console.WriteLine("List05 now has {0} ticks", stock.List05.Count);
             Console.WriteLine("List15 now has {0} ticks", stock.List15.Count);
             Console.WriteLine("O: {0}\tC: {1}\tH: {2}\tL: {3}", stock.Open, stock.Close, stock.High, stock.Low);
+
+
+            var stock1 = new Stock() { Ticker = "STL.OSE" };
+            var trades = Helper.GetTradesForDate(stock1.Ticker, new DateTime(2015, 4, 7));
+            using (StringReader read = new StringReader(trades))
+            {
+                string line1;
+                while ((line1 = read.ReadLine()) != null)
+                {
+                    var values = line1.Split(',');
+
+                    if (values[0] == "time")
+                    {
+                        // first row -> skip
+                    }
+                    else
+                    {
+                        var timestamp = DateTime.ParseExact(values[0], "yyyyMMddTHHmmss", CultureInfo.InvariantCulture).ToLocalTime();
+                        var price = double.Parse(values[1]);
+
+                        stock1.AddTrade(timestamp, price);
+                    }
+                }
+            }
+
+            Console.WriteLine("List01 now has {0} ticks", stock1.List01.Count);
+            Console.WriteLine("List05 now has {0} ticks", stock1.List05.Count);
+            Console.WriteLine("List15 now has {0} ticks", stock1.List15.Count);
+            Console.WriteLine("O: {0}\tC: {1}\tH: {2}\tL: {3}", stock1.Open, stock1.Close, stock1.High, stock1.Low);
 
             Console.ReadKey();
         }
