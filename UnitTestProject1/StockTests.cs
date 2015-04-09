@@ -132,6 +132,64 @@ namespace UnitTestProject1
             Assert.AreEqual(1.23, stock.Close);
         }
 
+        [TestMethod]
+        public void CheckBuy_WhenNoTrades_ReturnsFalse()
+        {
+            Assert.IsFalse(stock.CheckBuy());
+        }
+
+        [TestMethod]
+        public void CheckBuy_WhenThreeTradesWithCorrectTrend_ReturnsTrue()
+        {
+            stock.AddTrade(timestamp.AddMinutes(-3), 3.0);
+            stock.AddTrade(timestamp.AddMinutes(-3), 2.9);
+            stock.AddTrade(timestamp.AddMinutes(-2), 2.8);
+            stock.AddTrade(timestamp.AddMinutes(-2), 2.9);
+            stock.AddTrade(timestamp.AddMinutes(-1), 2.9);
+            stock.AddTrade(timestamp.AddMinutes(-1), 3.0);
+
+            Assert.IsTrue(stock.CheckBuy());
+        }
+
+        [TestMethod]
+        public void CheckBuy_WhenThreeTradesWithIncorrectTrend_ReturnsFalse()
+        {
+            stock.AddTrade(timestamp.AddMinutes(-3), 3.0);
+            stock.AddTrade(timestamp.AddMinutes(-3), 2.9);
+            stock.AddTrade(timestamp.AddMinutes(-2), 3.0);
+            stock.AddTrade(timestamp.AddMinutes(-2), 2.9);
+            stock.AddTrade(timestamp.AddMinutes(-1), 2.9);
+            stock.AddTrade(timestamp.AddMinutes(-1), 3.0);
+
+            Assert.IsFalse(stock.CheckBuy());
+        }
+
+        [TestMethod]
+        public void CheckSell_WhenThreeTradesWithCorrectTrend_ReturnsTrue()
+        {
+            stock.AddTrade(timestamp.AddMinutes(-3), 3.0);
+            stock.AddTrade(timestamp.AddMinutes(-3), 3.0);
+            stock.AddTrade(timestamp.AddMinutes(-2), 3.0);
+            stock.AddTrade(timestamp.AddMinutes(-2), 2.9);
+            stock.AddTrade(timestamp.AddMinutes(-1), 2.9);
+            stock.AddTrade(timestamp.AddMinutes(-1), 2.8);
+
+            Assert.IsTrue(stock.CheckSell());
+        }
+
+        [TestMethod]
+        public void CheckSell_WhenThreeTradesWithIncorrectTrend_ReturnsFalse()
+        {
+            stock.AddTrade(timestamp.AddMinutes(-3), 3.0);
+            stock.AddTrade(timestamp.AddMinutes(-3), 3.0);
+            stock.AddTrade(timestamp.AddMinutes(-2), 3.0);
+            stock.AddTrade(timestamp.AddMinutes(-2), 2.9);
+            stock.AddTrade(timestamp.AddMinutes(-1), 2.9);
+            stock.AddTrade(timestamp.AddMinutes(-1), 2.9);
+
+            Assert.IsFalse(stock.CheckSell());
+        }
+
         [TestCleanup]
         public void Teardown()
         {

@@ -10,35 +10,17 @@ namespace ConsoleApplication1
         static void Main(string[] args)
         {
             Console.WriteLine("Hello");
-            var reader = new StreamReader(File.OpenRead(@"C:\Users\mgr\Source\Repos\bugfree-avenger\ConsoleApplication1\stl-20150407.csv"));
+
+            var portfolio = new Portfolio();
 
             var stock = new Stock() { Ticker = "STL.OSE" };
-
-            while (!reader.EndOfStream)
-            {
-                var line = reader.ReadLine();
-                var values = line.Split(',');
-
-                var timestamp = DateTime.ParseExact(values[0], "yyyyMMddTHHmmss", System.Globalization.CultureInfo.InvariantCulture).ToLocalTime();
-                var price = Double.Parse(values[1]);
-
-                stock.AddTrade(timestamp, price);
-            }
-
-            Console.WriteLine("List01 now has {0} ticks", stock.List01.Count);
-            Console.WriteLine("List05 now has {0} ticks", stock.List05.Count);
-            Console.WriteLine("List15 now has {0} ticks", stock.List15.Count);
-            Console.WriteLine("O: {0}\tC: {1}\tH: {2}\tL: {3}", stock.Open, stock.Close, stock.High, stock.Low);
-
-
-            var stock1 = new Stock() { Ticker = "STL.OSE" };
-            var trades = Helper.GetTradesForDate(stock1.Ticker, new DateTime(2015, 4, 7));
+            var trades = Helper.GetTradesForDate(stock.Ticker, new DateTime(2015, 4, 7));
             using (StringReader read = new StringReader(trades))
             {
-                string line1;
-                while ((line1 = read.ReadLine()) != null)
+                string line;
+                while ((line = read.ReadLine()) != null)
                 {
-                    var values = line1.Split(',');
+                    var values = line.Split(',');
 
                     if (values[0] == "time")
                     {
@@ -49,15 +31,15 @@ namespace ConsoleApplication1
                         var timestamp = DateTime.ParseExact(values[0], "yyyyMMddTHHmmss", CultureInfo.InvariantCulture).ToLocalTime();
                         var price = double.Parse(values[1]);
 
-                        stock1.AddTrade(timestamp, price);
+                        stock.AddTrade(timestamp, price);
                     }
                 }
             }
 
-            Console.WriteLine("List01 now has {0} ticks", stock1.List01.Count);
-            Console.WriteLine("List05 now has {0} ticks", stock1.List05.Count);
-            Console.WriteLine("List15 now has {0} ticks", stock1.List15.Count);
-            Console.WriteLine("O: {0}\tC: {1}\tH: {2}\tL: {3}", stock1.Open, stock1.Close, stock1.High, stock1.Low);
+            Console.WriteLine("List01 now has {0} ticks", stock.List01.Count);
+            Console.WriteLine("List05 now has {0} ticks", stock.List05.Count);
+            Console.WriteLine("List15 now has {0} ticks", stock.List15.Count);
+            Console.WriteLine("O: {0}\tC: {1}\tH: {2}\tL: {3}", stock.Open, stock.Close, stock.High, stock.Low);
 
             Console.ReadKey();
         }

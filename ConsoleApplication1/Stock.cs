@@ -68,6 +68,28 @@ namespace ConsoleApplication1
 
             var dt15 = Helper.AdjustTime(timestamp, 15);
             AddOrUpdateTick(ref list15, dt15, price);
+
+            //CheckBuyOrSell();
+        }
+
+        public bool CheckBuy()
+        {
+            if (list01.Count >= 3 && list01[list01.Count-1].Trend == 1 && list01[list01.Count - 2].Trend == 1 && list01[list01.Count - 3].Trend < 1)
+            {
+                // It is a buy!
+                return true;
+            }
+            return false;
+        }
+
+        public bool CheckSell()
+        {
+            if (list01.Count >= 3 && list01[list01.Count - 1].Trend == -1 && list01[list01.Count - 2].Trend == -1 && list01[list01.Count - 3].Trend > -1)
+            {
+                // It is a sell!
+                return true;
+            }
+            return false;
         }
 
         public void AddOrUpdateTick(ref List<Tick> list, DateTime dateTime, double price)
@@ -96,6 +118,11 @@ namespace ConsoleApplication1
 
                 list.Add(tick);
             }
+        }
+
+        public Holding Purchase(double amount)
+        {
+            throw new NotImplementedException();
         }
     }
 }

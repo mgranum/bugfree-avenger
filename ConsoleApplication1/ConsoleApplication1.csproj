@@ -42,6 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Helper.cs" />
+    <Compile Include="Holding.cs" />
+    <Compile Include="Portfolio.cs" />
     <Compile Include="Stock.cs" />
     <Compile Include="Tick.cs" />
     <Compile Include="Program.cs" />
