@@ -13,5 +13,22 @@ namespace ConsoleApplication1
         public double Close { get; set; }
         public double High { get; set; }
         public double Low { get; set; }
+        public int Trend {
+            get
+            {
+                if (Close > Open)
+                {
+                    return 1;
+                }
+                else if (Open > Close)
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        }
     }
 }
