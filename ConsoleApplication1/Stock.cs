@@ -8,11 +8,32 @@ namespace ConsoleApplication1
 {
     public class Stock
     {
-        private double lastPrice;
+        private double currentPrice;
+        private double exitPrice;
+        public double ExitPrice
+        {
+            get
+            {
+                if (list01.Count > 1)
+                {
+                    var newExitPrice = list01[list01.Count - 2].Low - (Wiggle * 1.1);
+                    if (newExitPrice > exitPrice)
+                    {
+                        exitPrice = newExitPrice;
+                    }
+                    return exitPrice;
+                }
+                else
+                {
+                    return 0.0;
+                }
+            }
+        }
 
         private List<Tick> list01;
         private List<Tick> list05;
         private List<Tick> list15;
+        internal double EntryPrice;
 
         public string Ticker { get; set; }
         public List<Tick> List05 { get { return list05; } }
@@ -21,7 +42,6 @@ namespace ConsoleApplication1
         {
             get { return list01; }
         }
-
         public double High
         {
             get
@@ -29,7 +49,6 @@ namespace ConsoleApplication1
                 return list01.Max(x => x.High);
             }
         }
-
         public double Low
         {
             get
@@ -37,7 +56,6 @@ namespace ConsoleApplication1
                 return list01.Min(x => x.Low);
             }
         }
-
         public double Open
         {
             get
@@ -63,7 +81,7 @@ namespace ConsoleApplication1
 
         public void AddTrade(DateTime timestamp, double price)
         {
-            lastPrice = price;
+            currentPrice = price;
 
             var dt01 = Helper.AdjustTime(timestamp, 1);
             AddOrUpdateTick(ref list01, dt01, price);
@@ -77,11 +95,11 @@ namespace ConsoleApplication1
 
         public bool CheckBuy()
         {
-            if (list01.Count >= 3 && list01[list01.Count-1].Trend == 1 && 
-                list01[list01.Count - 2].Trend == 1 && 
+            if (list01.Count >= 3 && list01[list01.Count - 1].Trend == 1 &&
+                list01[list01.Count - 2].Trend == 1 &&
                 list01[list01.Count - 3].Trend < 1 &&
                 list05.Count > 1 &&
-                list05[list05.Count-1].Trend == 1)
+                list05[list05.Count - 1].Trend == 1)
             {
                 // It is a buy!
                 return true;
@@ -91,13 +109,13 @@ namespace ConsoleApplication1
 
         public bool CheckSell()
         {
-
-            if (list01.Count >= 3 && list01[list01.Count - 1].Trend == -1 && 
-                list01[list01.Count - 2].Trend == -1 && 
+            if (list01.Count >= 3 && list01[list01.Count - 1].Trend == -1 &&
+                list01[list01.Count - 2].Trend == -1 &&
                 list01[list01.Count - 3].Trend > -1 &&
                 list01[list01.Count - 3].High - list01[list01.Count - 1].Low > Wiggle &&
+                currentPrice <= ExitPrice &&
                 list05.Count > 1 &&
-                list05[list05.Count-1].Trend == -1)
+                list05[list05.Count - 1].Trend == -1)
             {
                 // It is a sell!
                 return true;

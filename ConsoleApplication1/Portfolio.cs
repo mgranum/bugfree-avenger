@@ -22,12 +22,24 @@ namespace ConsoleApplication1
             return Holdings.ContainsKey(ticker);
         }
 
-        public void AddHoldingForStock(string ticker, Holding holding)
+        public bool BuyStock(string ticker, double numberOfShares, double price)
         {
-            Holdings.Add(ticker, holding);
+            try
+            {
+                // Do the actual trade on the stock exchange
+
+                var holding = new Holding() { Ticker = ticker, NumberOfShares = 100, TimeOfPurchase = DateTime.Now, Price = price, TotalCost = (price * 100) };
+                Holdings.Add(ticker, holding);
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
-        public void SellHoldingForStock(string ticker, double price)
+        public void SellStock(string ticker, double price)
         {
             var holding = Holdings[ticker];
             var transaction = new Transaction()
