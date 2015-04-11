@@ -14,8 +14,8 @@ namespace ConsoleApplication1
 
             var portfolio = new Portfolio();
 
-            var startDate = new DateTime(2015, 3, 3);
-            var endDate = new DateTime(2015, 3, 6);
+            var startDate = new DateTime(2015, 4, 6);
+            var endDate = new DateTime(2015, 4, 10);
 
             foreach (DateTime today in EachDay(startDate, endDate))
             {
@@ -23,6 +23,7 @@ namespace ConsoleApplication1
                 var endOfTrade = today.AddHours(16).AddMinutes(20);
                 var stock = new Stock() { Ticker = "STL.OSE", Wiggle = 0.49 };
                 var trades = Helper.GetTradesForDate(stock.Ticker, today);
+                var noMoreTradesToday = false;
 
                 using (StringReader read = new StringReader(trades))
                 {
@@ -42,18 +43,23 @@ namespace ConsoleApplication1
 
                             stock.AddTrade(timestamp, price);
 
-                            if (portfolio.CurrentlyHoldingStock(stock.Ticker) && (stock.CheckSell() || timestamp > endOfTrade))
+                            if (!noMoreTradesToday)
                             {
-                                // Sell
-                                portfolio.SellStock(stock.Ticker, price);
-                            }
-                            else if (!portfolio.CurrentlyHoldingStock(stock.Ticker) && stock.CheckBuy() && timestamp < endOfTrade)
-                            {
-                                // Buy
-                                if (portfolio.BuyStock(stock.Ticker, 100, price))
+                                if (portfolio.CurrentlyHoldingStock(stock.Ticker) && (stock.CheckSell() || timestamp > endOfTrade))
                                 {
-                                    stock.EntryPrice = price;
+                                    // Sell
+                                    portfolio.SellStock(stock.Ticker, price);
                                 }
+                                else if (!portfolio.CurrentlyHoldingStock(stock.Ticker) && stock.CheckBuy() && timestamp < endOfTrade)
+                                {
+                                    // Buy
+                                    if (portfolio.BuyStock(stock.Ticker, 100, price))
+                                    {
+                                        stock.EntryPrice = price;
+                                    }
+                                }
+
+                                noMoreTradesToday = timestamp > endOfTrade;
                             }
                         }
                     }
@@ -61,7 +67,7 @@ namespace ConsoleApplication1
 
                 foreach (var trans in portfolio.CompletedTransactions)
                 {
-                    Console.WriteLine("{0}: {1}\t{2}\t{3}\t{4}", today, trans.PurchasePrice, trans.TotalCost, trans.SellPrice, trans.Profit);
+                    Console.WriteLine("{0}: {1}\t{2}\t{3}\t{4}", string.Format("{0:ddMM}",today), trans.PurchasePrice, trans.TotalCost, trans.SellPrice, trans.Profit);
                 }
 
                 Console.WriteLine("O: {0}\tC: {1}\tH: {2}\tL: {3}", stock.Open, stock.Close, stock.High, stock.Low);

@@ -46,28 +46,28 @@ namespace ConsoleApplication1
         {
             get
             {
-                return list01.Max(x => x.High);
+                return list01.Count > 0 ? list01.Max(x => x.High) : 0.0;
             }
         }
         public double Low
         {
             get
             {
-                return list01.Min(x => x.Low);
+                return list01.Count > 0 ? list01.Min(x => x.Low) : 0.0;
             }
         }
         public double Open
         {
             get
             {
-                return list01.First().Open;
+                return list01.Count > 0 ? list01.First().Open : 0.0;
             }
         }
         public double Close
         {
             get
             {
-                return list01.Last().Close;
+                return list01.Count > 0 ? list01.Last().Close : 0.0;
             }
         }
         public double Wiggle { get; set; }

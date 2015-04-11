@@ -24,7 +24,7 @@ namespace ConsoleApplication1
 
         public static string GetTradesForDate(string stock, DateTime date)
         {
-            var datestring = string.Format("{0: yyyyMMdd}", date);
+            var datestring = string.Format("{0:yyyyMMdd}", date);
             var url = string.Format("http://www.netfonds.no/quotes/tradedump.php?date={0}&paper={1}&csv_format=csv", datestring, stock);
             return ReadDataFromUri(url);
         }

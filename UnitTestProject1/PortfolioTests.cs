@@ -24,8 +24,7 @@ namespace UnitTestProject1
         [TestMethod]
         public void CurrentlyHoldingStock_WhenStockIsInPortfolio_ReturnsTrue()
         {
-            var holding = new Holding();
-            portfolio.AddHoldingForStock("TEST", holding);
+            portfolio.BuyStock("TEST", 1.0, 1.0);
 
             Assert.IsTrue(portfolio.CurrentlyHoldingStock("TEST"));
         }

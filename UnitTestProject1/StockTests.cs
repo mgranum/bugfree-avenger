@@ -31,6 +31,15 @@ namespace UnitTestProject1
         }
 
         [TestMethod]
+        public void Constructor_NoItemsInList_PropertiesAreAccessibleWithoutException()
+        {
+            Assert.AreEqual(0.0, stock.Open);
+            Assert.AreEqual(0.0, stock.Close);
+            Assert.AreEqual(0.0, stock.High);
+            Assert.AreEqual(0.0, stock.Low);
+        }
+
+        [TestMethod]
         public void AddTrade_WhenAddingOneTrade_ListsContainOneItem()
         {
             stock.AddTrade(timestamp, 1.0);
@@ -140,7 +149,9 @@ namespace UnitTestProject1
 
         [TestMethod]
         public void CheckBuy_WhenThreeTradesWithCorrectTrend_ReturnsTrue()
-        {
+        { 
+            stock.AddTrade(timestamp.AddMinutes(-7), 2.0);
+            stock.AddTrade(timestamp.AddMinutes(-7), 2.5);
             stock.AddTrade(timestamp.AddMinutes(-3), 3.0);
             stock.AddTrade(timestamp.AddMinutes(-3), 2.9);
             stock.AddTrade(timestamp.AddMinutes(-2), 2.8);
