@@ -14,7 +14,13 @@ namespace ConsoleApplication1
 
             var portfolio = new Portfolio();
 
-            var startDate = new DateTime(2015, 4, 6);
+            //var stl = new Simulator("STL.OSE", portfolio);
+            //stl.Simulate();
+            var yar = new Simulator("YAR.OSE", portfolio);
+            yar.Simulate();
+
+            #region
+            /*var startDate = new DateTime(2015, 4, 6);
             var endDate = new DateTime(2015, 4, 10);
 
             foreach (DateTime today in EachDay(startDate, endDate))
@@ -64,16 +70,24 @@ namespace ConsoleApplication1
                         }
                     }
                 }
-
+                
                 foreach (var trans in portfolio.CompletedTransactions)
                 {
-                    Console.WriteLine("{0}: {1}\t{2}\t{3}\t{4}", string.Format("{0:ddMM}",today), trans.PurchasePrice, trans.TotalCost, trans.SellPrice, trans.Profit);
+                    //Console.WriteLine("{0}: {1}\t{2}\t{3}\t{4}", string.Format("{0:ddMM}",today), trans.PurchasePrice, trans.TotalCost, trans.SellPrice, trans.Profit);
                 }
 
-                Console.WriteLine("O: {0}\tC: {1}\tH: {2}\tL: {3}", stock.Open, stock.Close, stock.High, stock.Low);
+                //Console.WriteLine("O: {0}\tC: {1}\tH: {2}\tL: {3}", stock.Open, stock.Close, stock.High, stock.Low);
             }
+            */
+
+            #endregion
 
             Console.WriteLine("===================");
+            Console.WriteLine("Number of trades: {0}", portfolio.CompletedTransactions.Count);
+            Console.WriteLine("Number of profitable trades: {0}", portfolio.CompletedTransactions.Count(d => d.Profit > 0.0));
+            Console.WriteLine("Number of loosing trades: {0}", portfolio.CompletedTransactions.Count(d => d.Profit < 0.0));
+            Console.WriteLine("Greatest win: {0}", portfolio.CompletedTransactions.Max(d => d.Profit));
+            Console.WriteLine("Greatest loss: {0}", portfolio.CompletedTransactions.Min(d => d.Profit));
             Console.WriteLine("Total profit: {0}", portfolio.CompletedTransactions.Sum(d => d.Profit));
             Console.WriteLine("===================");
 

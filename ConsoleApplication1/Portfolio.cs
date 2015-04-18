@@ -28,7 +28,7 @@ namespace ConsoleApplication1
             {
                 // Do the actual trade on the stock exchange
 
-                var holding = new Holding() { Ticker = ticker, NumberOfShares = 100, TimeOfPurchase = DateTime.Now, Price = price, TotalCost = (price * 100) };
+                var holding = new Holding() { Ticker = ticker, NumberOfShares = numberOfShares, TimeOfPurchase = DateTime.Now, Price = price, TotalCost = (price * numberOfShares) };
                 Holdings.Add(ticker, holding);
 
                 return true;
@@ -55,6 +55,21 @@ namespace ConsoleApplication1
             };
             CompletedTransactions.Add(transaction);
             Holdings.Remove(ticker);
+        }
+
+        public bool SellStockAtStopLoss(string ticker, double currentPrice)
+        {
+            var holding = Holdings[ticker];
+            var entryPrice = holding.Price;
+            var stopLoss = entryPrice * 2.5 / 100;
+            var stopLossPrice = entryPrice - stopLoss;
+
+            if (currentPrice < stopLossPrice)
+            {
+                SellStock(ticker, stopLossPrice);
+                return true;
+            }
+            return false;
         }
     }
 }
