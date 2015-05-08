@@ -28,7 +28,40 @@ namespace ConsoleApplication1
             {
                 // Do the actual trade on the stock exchange
 
-                var holding = new Holding() { Ticker = ticker, NumberOfShares = numberOfShares, TimeOfPurchase = DateTime.Now, Price = price, TotalCost = (price * numberOfShares) };
+                var holding = new Holding() {
+                    Ticker = ticker,
+                    NumberOfShares = numberOfShares,
+                    TimeOfPurchase = DateTime.Now,
+                    Price = price,
+                    TotalCost = (price * numberOfShares),
+                    StopLoss = calculatePriceMinusPercentage(price, 2.5),
+                    StopProfit = calculatePriceMinusPercentage(price, 2.5)
+                };
+                Holdings.Add(ticker, holding);
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        public bool BuyStock(string ticker, double numberOfShares, double price, DateTime simulationDate)
+        {
+            try
+            {
+                // Do the actual trade on the stock exchange
+
+                var holding = new Holding()
+                {
+                    Ticker = ticker,
+                    NumberOfShares = numberOfShares,
+                    TimeOfPurchase = simulationDate,
+                    Price = price,
+                    TotalCost = (price * numberOfShares),
+                    StopLoss = calculatePriceMinusPercentage(price, 2.5),
+                    StopProfit = calculatePriceMinusPercentage(price, 2.5)
+                };
                 Holdings.Add(ticker, holding);
 
                 return true;
@@ -57,19 +90,66 @@ namespace ConsoleApplication1
             Holdings.Remove(ticker);
         }
 
-        public bool SellStockAtStopLoss(string ticker, double currentPrice)
+        public void SellStock(string ticker, double price, DateTime simulationDate)
         {
             var holding = Holdings[ticker];
-            var entryPrice = holding.Price;
-            var stopLoss = entryPrice * 2.5 / 100;
-            var stopLossPrice = entryPrice - stopLoss;
-
-            if (currentPrice < stopLossPrice)
+            var transaction = new Transaction()
             {
-                SellStock(ticker, stopLossPrice);
+                Ticker = holding.Ticker,
+                NumberOfShares = holding.NumberOfShares,
+                PurchasePrice = holding.Price,
+                TimeOfPurchase = holding.TimeOfPurchase,
+                TotalCost = holding.TotalCost,
+                TimeOfSell = simulationDate,
+                SellPrice = price,
+                Profit = (holding.NumberOfShares * price) - holding.TotalCost
+            };
+            CompletedTransactions.Add(transaction);
+            Holdings.Remove(ticker);
+        }
+
+
+        public bool SellStockAtStopLoss(string ticker, double currentPrice, DateTime simulationDate)
+        {
+            var holding = Holdings[ticker];
+
+            if (currentPrice < holding.StopLoss)
+            {
+                SellStock(ticker, holding.StopLoss, simulationDate);
                 return true;
             }
             return false;
+        }
+
+        public bool SellStockAtStopProfit(string ticker, double currentPrice, DateTime simulationDate)
+        {
+            var holding = Holdings[ticker];
+
+            if (currentPrice <= holding.StopProfit)
+            {
+                SellStock(ticker, currentPrice, simulationDate);
+                return true;
+            }
+
+            UpdateStopProfit(ticker, currentPrice);
+            return false;
+        }
+
+        public void UpdateStopProfit(string ticker, double currentHigh)
+        {
+            var holding = Holdings[ticker];
+
+            // Beregn ny StopProfit
+            var newStopProfit = calculatePriceMinusPercentage(currentHigh, 2.5);
+            if (newStopProfit > holding.StopProfit)
+            {
+                holding.StopProfit = newStopProfit;
+            }
+        }
+
+        private double calculatePriceMinusPercentage(double price, double percentage)
+        {
+            return price - (price * percentage / 100);
         }
     }
 }

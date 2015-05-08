@@ -13,5 +13,7 @@ namespace ConsoleApplication1
         public double NumberOfShares { get; set; }
         public double Price { get; set; }
         public double TotalCost { get; set; }
+        public double StopLoss { get; set; }
+        public double StopProfit { get; set; }
     }
 }

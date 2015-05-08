@@ -91,6 +91,11 @@ namespace ConsoleApplication1
             Console.WriteLine("Total profit: {0}", portfolio.CompletedTransactions.Sum(d => d.Profit));
             Console.WriteLine("===================");
 
+            foreach (var item in portfolio.CompletedTransactions)
+            {
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", string.Format("{0:yyyyMMdd}", item.TimeOfPurchase), string.Format("{0:0.00}", item.PurchasePrice), string.Format("{0:yyyyMMdd}", item.TimeOfSell), string.Format("{0:0.00}", item.SellPrice), string.Format("{0:0.00}", item.Profit));
+            }
+
             Console.ReadKey();
         }
 

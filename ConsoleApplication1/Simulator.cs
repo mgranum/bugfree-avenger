@@ -17,7 +17,7 @@ namespace ConsoleApplication1
         private int historyItem;
         private bool currentlyHolding;
         private double numberOfShares = 100.0;
-        private int numberOfHoldingDaysPerTrade = 1;
+        private int numberOfHoldingDaysPerTrade = -5;
         private int sellAtHistoryItem = 0;
 
         public Simulator(string input, Portfolio portf)
@@ -43,22 +43,39 @@ namespace ConsoleApplication1
                     if (CheckBuySignals())
                     {
                         // Buy
-                        portfolio.BuyStock(ticker, numberOfShares, history[i].Open);
-                        sellAtHistoryItem = i + numberOfHoldingDaysPerTrade;
+                        portfolio.BuyStock(ticker, numberOfShares, history[i].Open, history[i].Timestamp);
+                        if (numberOfHoldingDaysPerTrade > 0)
+                        {
+                            sellAtHistoryItem = i + numberOfHoldingDaysPerTrade;
+                        }
                     }
-                } else if(i == sellAtHistoryItem)
-                {
-                    if (!portfolio.SellStockAtStopLoss(ticker, history[i].Low))
-                    {
-                        portfolio.SellStock(ticker, history[i].Close);
-                    }
-                    sellAtHistoryItem = 0;
                 }
-                else
+
+                if (portfolio.CurrentlyHoldingStock(ticker))
                 {
-                    if(portfolio.SellStockAtStopLoss(ticker, history[i].Low))
+                    if (i == history.Count -1)
                     {
+                        // Last day in history - get out!
+                        portfolio.SellStock(ticker, history[i].Close); 
+                    }
+                    else if (i == sellAtHistoryItem)
+                    {
+                        if (!portfolio.SellStockAtStopLoss(ticker, history[i].Low, history[i].Timestamp))
+                        {
+                            portfolio.SellStock(ticker, history[i].Close, history[i].Timestamp);
+                        }
                         sellAtHistoryItem = 0;
+                    }
+                    else
+                    {
+                        if (portfolio.SellStockAtStopLoss(ticker, history[i].Low, history[i].Timestamp))
+                        {
+                            sellAtHistoryItem = 0;
+                        }
+                        else if (portfolio.SellStockAtStopProfit(ticker, history[i].Low, history[i].Timestamp))
+                        {
+                            sellAtHistoryItem = 0;
+                        }
                     }
                 }
             }
@@ -88,7 +105,7 @@ namespace ConsoleApplication1
                         var close = double.Parse(values[6]);
                         var tick = new Tick() { Timestamp = timestamp, Open = open, High = high, Low = low, Close = close };
 
-                        history.Add(tick);
+                        history.Insert(0, tick);
                     }
                 }
             }
@@ -112,6 +129,12 @@ namespace ConsoleApplication1
         private bool IsSmashDay()
         {
             return (history[historyItem].Close < history[historyItem - 1].Low);
+        }
+
+        private bool IsMacdBreakthrough()
+        {
+            //var fastEma = 
+            return false;
         }
     }
 }
