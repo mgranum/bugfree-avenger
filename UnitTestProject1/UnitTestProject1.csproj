@@ -55,6 +55,7 @@
     <Compile Include="StockTests.cs" />
     <Compile Include="TickTests.cs" />
     <Compile Include="PortfolioTests.cs" />
+    <Compile Include="ExtensionMethodsTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ConsoleApplication1\ConsoleApplication1.csproj">

@@ -35,6 +35,7 @@ namespace ConsoleApplication1
         public double MACD { get; set; }
         public double StochasticK { get; set; }
         public double StochasticD { get; set; }
+        public double SwingValue { get; set; }
         public double SwingValueAverage { get; set; }
     }
 }

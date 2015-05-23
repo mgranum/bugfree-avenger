@@ -17,7 +17,7 @@ namespace ConsoleApplication1
         private int historyItem;
         private bool currentlyHolding;
         private double numberOfShares = 100.0;
-        private int numberOfHoldingDaysPerTrade = -5;
+        private int numberOfHoldingDaysPerTrade = 4;
         private int sellAtHistoryItem = 0;
 
         public Simulator(string input, Portfolio portf)
@@ -106,6 +106,7 @@ namespace ConsoleApplication1
                         var tick = new Tick() { Timestamp = timestamp, Open = open, High = high, Low = low, Close = close };
 
                         history.Insert(0, tick);
+                        history.CalculateIndicators();
                     }
                 }
             }
@@ -113,6 +114,7 @@ namespace ConsoleApplication1
 
         private bool CheckBuySignals()
         {
+            return IsUptrendLongTerm() && HasDipShortTerm() && IsStochastic();
             return IsUptrendLongTerm() && HasDipShortTerm() && IsSmashDay();
         }
 
@@ -134,6 +136,34 @@ namespace ConsoleApplication1
         private bool IsMacdBreakthrough()
         {
             //var fastEma = 
+            return false;
+        }
+
+        private bool IsStochastic()
+        {
+            // =AND(G202>H202;G201<H201;G200<H200;G202<80;H202<80)
+            // G=%K, H=%D
+            if (history[historyItem].StochasticK > history[historyItem].StochasticD)
+            {
+                if (history[historyItem-1].StochasticK < history[historyItem-1].StochasticD)
+                {
+                    if (history[historyItem-2].StochasticK < history[historyItem-2].StochasticD)
+                    {
+                        if (history[historyItem].StochasticK < 80 && history[historyItem].StochasticD < 80)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsGreatestSwingValue()
+        {
+            // =AND(D18>(C18+O17);F17<F12)
+            // C=Open, D=High, E=Low, F=Close, O=SwingValueAverage
             return false;
         }
     }
