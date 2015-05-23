@@ -30,5 +30,11 @@ namespace ConsoleApplication1
                 }
             }
         }
+        public double FastEMA { get; set; }
+        public double SlowEMA { get; set; }
+        public double MACD { get; set; }
+        public double StochasticK { get; set; }
+        public double StochasticD { get; set; }
+        public double SwingValueAverage { get; set; }
     }
 }
