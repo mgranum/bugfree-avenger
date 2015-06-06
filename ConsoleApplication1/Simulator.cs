@@ -14,11 +14,11 @@ namespace ConsoleApplication1
         private List<Transaction> transactions;
         private Portfolio portfolio;
         private string ticker;
-        private int historyItem;
+        private int today;
+        private int yesterday;
         private bool currentlyHolding;
         private double numberOfShares = 100.0;
         private int numberOfHoldingDaysPerTrade = 4;
-        private int sellAtHistoryItem = 0;
 
         public Simulator(string input, Portfolio portf)
         {
@@ -31,59 +31,75 @@ namespace ConsoleApplication1
         {
             ReadHistory();
 
-            for(var i=0; i < history.Count; i++)
+            for (today = 0; today < history.Count; today++)
             {
-                if (i <= 30)
+                if (today <= 30)
                 {
                     continue;
                 }
-                historyItem = i - 1;
-                if (!portfolio.CurrentlyHoldingStock(ticker))
+                yesterday = today - 1;
+
+                if (CheckBuySignals())
                 {
-                    if (CheckBuySignals())
+                    // Buy
+                    portfolio.BuyStock(ticker, numberOfShares, history[today].Open, history[today].Timestamp);
+                }
+
+                var holdings = portfolio.GetHoldings(ticker);
+                if (holdings == null || holdings.Count == 0)
+                {
+                    continue;
+                }
+                for (int n = holdings.Count - 1; n >= 0; n--)
+                {
+                    var holding = holdings[n];
+
+                    if (today == history.Count - 1)
                     {
-                        // Buy
-                        portfolio.BuyStock(ticker, numberOfShares, history[i].Open, history[i].Timestamp);
-                        if (numberOfHoldingDaysPerTrade > 0)
+                        // Last day in history - get out!
+                        portfolio.SellStock(ticker, holding.TimeOfPurchase, history[today].Close);
+                    }
+                    else if (numberOfHoldingDaysPerTrade > 0 && history[today - numberOfHoldingDaysPerTrade].Timestamp == holding.TimeOfPurchase)
+                    {
+                        if (!portfolio.SellStockAtStopLoss(ticker, holding.TimeOfPurchase, history[today].Low, history[today].Timestamp))
                         {
-                            sellAtHistoryItem = i + numberOfHoldingDaysPerTrade;
+                            portfolio.SellStock(ticker, holding.TimeOfPurchase, history[today].Close, history[today].Timestamp, "MD");
+                        }
+                    }
+                    else
+                    {
+                        if (!portfolio.SellStockAtStopLoss(ticker, holding.TimeOfPurchase, history[today].Low, history[today].Timestamp))
+                        {
+                            portfolio.SellStockAtStopProfit(ticker, holding.TimeOfPurchase, history[today].Low, history[today].Timestamp);
+
                         }
                     }
                 }
 
-                if (portfolio.CurrentlyHoldingStock(ticker))
-                {
-                    if (i == history.Count -1)
-                    {
-                        // Last day in history - get out!
-                        portfolio.SellStock(ticker, history[i].Close); 
-                    }
-                    else if (i == sellAtHistoryItem)
-                    {
-                        if (!portfolio.SellStockAtStopLoss(ticker, history[i].Low, history[i].Timestamp))
-                        {
-                            portfolio.SellStock(ticker, history[i].Close, history[i].Timestamp);
-                        }
-                        sellAtHistoryItem = 0;
-                    }
-                    else
-                    {
-                        if (portfolio.SellStockAtStopLoss(ticker, history[i].Low, history[i].Timestamp))
-                        {
-                            sellAtHistoryItem = 0;
-                        }
-                        else if (portfolio.SellStockAtStopProfit(ticker, history[i].Low, history[i].Timestamp))
-                        {
-                            sellAtHistoryItem = 0;
-                        }
-                    }
+            }
+        }
+
+        private bool ReachedMaximumNumberOfTradingDays(DateTime timeOfPurchase, DateTime today)
+        {
+            if (numberOfHoldingDaysPerTrade < 0) return false;
+
+            int count = 0;
+            for (DateTime index = timeOfPurchase; index < today; index = index.AddDays(1))
+            {
+                if (index.DayOfWeek == DayOfWeek.Saturday || index.DayOfWeek == DayOfWeek.Sunday) {
+
+                } else {
+                    count ++;
                 }
             }
+
+            return count == numberOfHoldingDaysPerTrade;
         }
 
         private void ReadHistory()
         {
             var data = Helper.GetStockHistory(ticker);
+            var tmpHistory = new List<Tick>();
 
             using (StringReader read = new StringReader(data))
             {
@@ -105,51 +121,63 @@ namespace ConsoleApplication1
                         var close = double.Parse(values[6]);
                         var tick = new Tick() { Timestamp = timestamp, Open = open, High = high, Low = low, Close = close };
 
-                        history.Insert(0, tick);
-                        history.CalculateIndicators();
+                        tmpHistory.Insert(0, tick);
                     }
                 }
             }
+            foreach (var item in tmpHistory)
+            {
+                history.Insert(0, item);
+                history.CalculateIndicators();
+            }
+            history = history.OrderBy(v => v.Timestamp).ToList();
+
         }
 
         private bool CheckBuySignals()
         {
-            return IsUptrendLongTerm() && HasDipShortTerm() && IsStochastic();
-            return IsUptrendLongTerm() && HasDipShortTerm() && IsSmashDay();
+            //return IsUptrendLongTerm() && HasDipShortTerm() && IsStochastic();
+            if (history[today].Timestamp == new DateTime(2007, 11, 2, 0, 0, 0))
+            {
+                var ugh = true;
+            }
+            return IsOutsideDay();
+            //return IsStochastic();
+            //return IsMACDBreakthrough();
+            //return IsUptrendLongTerm() && HasDipShortTerm() && IsSmashDay();
         }
 
         private bool IsUptrendLongTerm()
         {
-            return (history[historyItem].Open > history[historyItem - 30].Close);
+            return (history[yesterday].Open > history[yesterday - 29].Close);
         }
 
         private bool HasDipShortTerm()
         {
-            return (history[historyItem].Close < history[historyItem - 9].Close);
+            return (history[yesterday].Close < history[yesterday - 9].Close);
         }
 
         private bool IsSmashDay()
         {
-            return (history[historyItem].Close < history[historyItem - 1].Low);
+            return (history[yesterday].Close < history[yesterday - 1].Low);
         }
 
-        private bool IsMacdBreakthrough()
+        private bool IsMACDBreakthrough()
         {
-            //var fastEma = 
-            return false;
+            return (history[yesterday].MACD_Histogram > 0.0 && history[yesterday - 1].MACD_Histogram < 0.0 && history[yesterday - 2].MACD_Histogram < 0.0);
         }
 
         private bool IsStochastic()
         {
             // =AND(G202>H202;G201<H201;G200<H200;G202<80;H202<80)
             // G=%K, H=%D
-            if (history[historyItem].StochasticK > history[historyItem].StochasticD)
+            if (history[yesterday].StochasticK > history[yesterday].StochasticD)
             {
-                if (history[historyItem-1].StochasticK < history[historyItem-1].StochasticD)
+                if (history[yesterday - 1].StochasticK < history[yesterday - 1].StochasticD)
                 {
-                    if (history[historyItem-2].StochasticK < history[historyItem-2].StochasticD)
+                    if (history[yesterday - 2].StochasticK < history[yesterday - 2].StochasticD)
                     {
-                        if (history[historyItem].StochasticK < 80 && history[historyItem].StochasticD < 80)
+                        if (history[yesterday].StochasticK < 80 && history[yesterday].StochasticD < 80)
                         {
                             return true;
                         }
@@ -158,6 +186,15 @@ namespace ConsoleApplication1
             }
 
             return false;
+        }
+
+        private bool IsOutsideDay()
+        {
+            // C=Open, D=High, E=Low, F=Close
+            // =IF(AND(L493>L492>L491;D493>MAX(D490:D492);E493<MIN(E490:E492);F493<C493);"YES";"")
+            var highestHigh = history.Skip(yesterday-3).Take(3).Max(v => v.High);
+            var lowestLow = history.Skip(yesterday-3).Take(3).Min(v => v.Low);
+            return (history[yesterday].High > highestHigh && history[yesterday].Low < lowestLow && history[yesterday].Close < history[yesterday].Open);
         }
 
         private bool IsGreatestSwingValue()

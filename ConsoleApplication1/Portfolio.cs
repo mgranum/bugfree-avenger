@@ -8,18 +8,13 @@ namespace ConsoleApplication1
 {
     public class Portfolio
     {
-        public Dictionary<string, Holding> Holdings { get; set; }
+        public Dictionary<string, List<Holding>> Holdings { get; set; }
         public List<Transaction> CompletedTransactions { get; set; }
 
         public Portfolio()
         {
-            Holdings = new Dictionary<string, Holding>();
+            Holdings = new Dictionary<string, List<Holding>>();
             CompletedTransactions = new List<Transaction>();
-        }
-
-        public bool CurrentlyHoldingStock(string ticker)
-        {
-            return Holdings.ContainsKey(ticker);
         }
 
         public bool BuyStock(string ticker, double numberOfShares, double price)
@@ -37,13 +32,28 @@ namespace ConsoleApplication1
                     StopLoss = calculatePriceMinusPercentage(price, 2.5),
                     StopProfit = calculatePriceMinusPercentage(price, 2.5)
                 };
-                Holdings.Add(ticker, holding);
+
+                AddHolding(ticker, holding);
 
                 return true;
             }
             catch (Exception)
             {
                 return false;
+            }
+        }
+
+        private void AddHolding(string ticker, Holding holding)
+        {
+            if (Holdings.ContainsKey(ticker))
+            {
+                Holdings.FirstOrDefault(v => v.Key == ticker).Value.Add(holding);
+            }
+            else
+            {
+                var holdingsList = new List<Holding>();
+                holdingsList.Add(holding);
+                Holdings.Add(ticker, holdingsList);
             }
         }
         public bool BuyStock(string ticker, double numberOfShares, double price, DateTime simulationDate)
@@ -60,9 +70,9 @@ namespace ConsoleApplication1
                     Price = price,
                     TotalCost = (price * numberOfShares),
                     StopLoss = calculatePriceMinusPercentage(price, 2.5),
-                    StopProfit = calculatePriceMinusPercentage(price, 2.5)
+                    StopProfit = 0.0
                 };
-                Holdings.Add(ticker, holding);
+                AddHolding(ticker, holding);
 
                 return true;
             }
@@ -72,9 +82,9 @@ namespace ConsoleApplication1
             }
         }
 
-        public void SellStock(string ticker, double price)
+        public void SellStock(string ticker, DateTime timeOfPurchase, double price)
         {
-            var holding = Holdings[ticker];
+            var holding = GetHolding(ticker, timeOfPurchase);
             var transaction = new Transaction()
             {
                 Ticker = holding.Ticker,
@@ -87,12 +97,12 @@ namespace ConsoleApplication1
                 Profit = (holding.NumberOfShares * price) - holding.TotalCost
             };
             CompletedTransactions.Add(transaction);
-            Holdings.Remove(ticker);
+            RemoveHolding(ticker, holding.TimeOfPurchase);
         }
 
-        public void SellStock(string ticker, double price, DateTime simulationDate)
+        public void SellStock(string ticker, DateTime timeOfPurchase, double price, DateTime simulationDate, string sellSignal)
         {
-            var holding = Holdings[ticker];
+            var holding = GetHolding(ticker, timeOfPurchase);
             var transaction = new Transaction()
             {
                 Ticker = holding.Ticker,
@@ -102,54 +112,95 @@ namespace ConsoleApplication1
                 TotalCost = holding.TotalCost,
                 TimeOfSell = simulationDate,
                 SellPrice = price,
+                SellSignal = sellSignal,
                 Profit = (holding.NumberOfShares * price) - holding.TotalCost
             };
             CompletedTransactions.Add(transaction);
-            Holdings.Remove(ticker);
+            RemoveHolding(ticker, holding.TimeOfPurchase);
         }
 
 
-        public bool SellStockAtStopLoss(string ticker, double currentPrice, DateTime simulationDate)
+        public bool SellStockAtStopLoss(string ticker, DateTime timeOfPurchase, double currentPrice, DateTime simulationDate)
         {
-            var holding = Holdings[ticker];
+            var holding = GetHolding(ticker, timeOfPurchase);
 
             if (currentPrice < holding.StopLoss)
             {
-                SellStock(ticker, holding.StopLoss, simulationDate);
+                SellStock(ticker, timeOfPurchase, holding.StopLoss, simulationDate, "SL");
                 return true;
             }
             return false;
         }
 
-        public bool SellStockAtStopProfit(string ticker, double currentPrice, DateTime simulationDate)
+        public bool SellStockAtStopProfit(string ticker, DateTime timeOfPurchase, double currentPrice, DateTime simulationDate)
         {
-            var holding = Holdings[ticker];
+            var holding = GetHolding(ticker, timeOfPurchase);
 
             if (currentPrice <= holding.StopProfit)
             {
-                SellStock(ticker, currentPrice, simulationDate);
+                SellStock(ticker, timeOfPurchase, currentPrice, simulationDate, "SP");
                 return true;
             }
 
-            UpdateStopProfit(ticker, currentPrice);
+            UpdateStopProfit(ticker, timeOfPurchase, currentPrice);
             return false;
         }
 
-        public void UpdateStopProfit(string ticker, double currentHigh)
+        public void UpdateStopProfit(string ticker, DateTime timeOfPurchase, double currentHigh)
         {
-            var holding = Holdings[ticker];
+            var holding = GetHolding(ticker, timeOfPurchase);
 
-            // Beregn ny StopProfit
-            var newStopProfit = calculatePriceMinusPercentage(currentHigh, 2.5);
-            if (newStopProfit > holding.StopProfit)
+            if (holding.StopProfit > 0.0 && currentHigh > calculatePricePlusPercentage(holding.Price, 2.5))
             {
-                holding.StopProfit = newStopProfit;
+                // Beregn ny StopProfit
+                var newStopProfit = calculatePriceMinusPercentage(currentHigh, 2.5);
+                if (newStopProfit > holding.StopProfit)
+                {
+                    holding.StopProfit = newStopProfit;
+                }
             }
         }
 
         private double calculatePriceMinusPercentage(double price, double percentage)
         {
             return price - (price * percentage / 100);
+        }
+
+        private double calculatePricePlusPercentage(double price, double percentage)
+        {
+            return price + (price * percentage / 100);
+        }
+
+
+        public List<Holding> GetHoldings(string ticker)
+        {
+            if (Holdings.ContainsKey(ticker))
+            {
+                if (Holdings.First(v => v.Key == ticker).Value.Any())
+                {
+                    return Holdings.First(v => v.Key == ticker).Value;
+                }
+            }
+            return null;
+        }
+
+        private Holding GetHolding(string ticker, DateTime timeOfPurchase)
+        {
+            var holdingsList = GetHoldings(ticker);
+            if (holdingsList.Any())
+            {
+                return holdingsList.First(v => v.TimeOfPurchase == timeOfPurchase);
+            }
+            return null;
+        }
+
+        private void RemoveHolding(string ticker, DateTime timeOfPurchase)
+        {
+            var holdingsList = GetHoldings(ticker);
+            if (holdingsList.Any())
+            {
+                holdingsList.RemoveAll(v => v.TimeOfPurchase == timeOfPurchase);
+            }
         }
     }
 }

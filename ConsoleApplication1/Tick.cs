@@ -33,6 +33,8 @@ namespace ConsoleApplication1
         public double FastEMA { get; set; }
         public double SlowEMA { get; set; }
         public double MACD { get; set; }
+        public double MACD_Signal { get; set; }
+        public double MACD_Histogram { get; set; }
         public double StochasticK { get; set; }
         public double StochasticD { get; set; }
         public double SwingValue { get; set; }

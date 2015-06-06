@@ -19,6 +19,8 @@ namespace ConsoleApplication1
                 values.CalculateFastEMA();
                 values.CalculateSlowEMA();
                 values.CalculateMACD();
+                values.CalculateMACD_Signal();
+                values.CalculateMACD_Histogram();
             }
             return values;
         }
@@ -90,6 +92,10 @@ namespace ConsoleApplication1
                     values[0].FastEMA = Math.Round(ema, 2);
                 }
             }
+            else
+            {
+                values[0].FastEMA = 0.0;
+            }
             return values;
         }
 
@@ -112,6 +118,10 @@ namespace ConsoleApplication1
                     values[0].SlowEMA = Math.Round(ema, 2);
                 }
             }
+            else
+            {
+                values[0].SlowEMA = 0.0;
+            }
             return values;
         }
 
@@ -120,6 +130,42 @@ namespace ConsoleApplication1
             if (values != null && values.Count > 25)
             {
                 values[0].MACD = Math.Round(values[0].FastEMA - values[0].SlowEMA, 2);
+            }
+            return values;
+        }
+
+        private static List<Tick> CalculateMACD_Signal(this List<Tick> values)
+        {
+            if (values != null && values.Count > 33)
+            {
+                if (values.Count == 34)
+                {
+                    var sum = values.Sum(v => v.MACD);
+                    var avg = values.Take(9).Average(v => v.MACD);
+                    values[0].MACD_Signal = Math.Round(avg, 2);
+                }
+                else
+                {
+                    // =T2775*(2/($U$2+1))+U2774*(1-(2/($U$2+1)))
+                    var lastMACD = values.First().MACD;
+                    var previousSignal = values[1].MACD_Signal;
+                    var signal = lastMACD * (2.0 / (9.0 + 1.0)) + previousSignal * (1.0 - (2.0 / (9.0 + 1.0)));
+
+                    values[0].MACD_Signal = Math.Round(signal, 2);
+                }
+            }
+            else
+            {
+                values[0].MACD_Signal = 0.0;
+            }
+            return values;
+        }
+
+        private static List<Tick> CalculateMACD_Histogram(this List<Tick> values)
+        {
+            if (values != null && values.Count > 33)
+            {
+                values[0].MACD_Histogram = Math.Round(values[0].MACD - values[0].MACD_Signal, 2);
             }
             return values;
         }

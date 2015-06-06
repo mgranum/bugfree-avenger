@@ -16,8 +16,10 @@ namespace ConsoleApplication1
 
             //var stl = new Simulator("STL.OSE", portfolio);
             //stl.Simulate();
-            var yar = new Simulator("YAR.OSE", portfolio);
-            yar.Simulate();
+            //var yar = new Simulator("YAR.OSE", portfolio);
+            //yar.Simulate();
+            var sdrl = new Simulator("SDRL.OSE", portfolio);
+            sdrl.Simulate();
 
             #region
             /*var startDate = new DateTime(2015, 4, 6);
@@ -93,7 +95,13 @@ namespace ConsoleApplication1
 
             foreach (var item in portfolio.CompletedTransactions)
             {
-                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", string.Format("{0:yyyyMMdd}", item.TimeOfPurchase), string.Format("{0:0.00}", item.PurchasePrice), string.Format("{0:yyyyMMdd}", item.TimeOfSell), string.Format("{0:0.00}", item.SellPrice), string.Format("{0:0.00}", item.Profit));
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", 
+                    string.Format("{0:yyyyMMdd}", item.TimeOfPurchase), 
+                    string.Format("{0:0.00}", item.PurchasePrice), 
+                    string.Format("{0:yyyyMMdd}", item.TimeOfSell), 
+                    string.Format("{0:0.00}", item.SellPrice), 
+                    item.SellSignal,
+                    string.Format("{0:0.00}", item.Profit));
             }
 
             Console.ReadKey();

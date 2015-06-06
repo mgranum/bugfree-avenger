@@ -16,5 +16,7 @@ namespace ConsoleApplication1
         public DateTime TimeOfSell { get; set; }
         public double SellPrice { get; set; }
         public double Profit { get; set; }
+        public string BuySignal { get; set; }
+        public string SellSignal { get; set; }
     }
 }
