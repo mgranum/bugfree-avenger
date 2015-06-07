@@ -56,7 +56,7 @@ namespace ConsoleApplication1
                 Holdings.Add(ticker, holdingsList);
             }
         }
-        public bool BuyStock(string ticker, double numberOfShares, double price, DateTime simulationDate)
+        public bool BuyStock(string ticker, double numberOfShares, double price, DateTime simulationDate, BuySignals signals)
         {
             try
             {
@@ -70,7 +70,8 @@ namespace ConsoleApplication1
                     Price = price,
                     TotalCost = (price * numberOfShares),
                     StopLoss = calculatePriceMinusPercentage(price, 2.5),
-                    StopProfit = 0.0
+                    StopProfit = 0.0,
+                    BuySignals = signals
                 };
                 AddHolding(ticker, holding);
 
@@ -113,6 +114,7 @@ namespace ConsoleApplication1
                 TimeOfSell = simulationDate,
                 SellPrice = price,
                 SellSignal = sellSignal,
+                BuySignals = holding.BuySignals,
                 Profit = (holding.NumberOfShares * price) - holding.TotalCost
             };
             CompletedTransactions.Add(transaction);
@@ -132,17 +134,17 @@ namespace ConsoleApplication1
             return false;
         }
 
-        public bool SellStockAtStopProfit(string ticker, DateTime timeOfPurchase, double currentPrice, DateTime simulationDate)
+        public bool SellStockAtStopProfit(string ticker, DateTime timeOfPurchase, double currentLow, double currentHigh, DateTime simulationDate)
         {
             var holding = GetHolding(ticker, timeOfPurchase);
 
-            if (currentPrice <= holding.StopProfit)
+            if (currentLow <= holding.StopProfit)
             {
-                SellStock(ticker, timeOfPurchase, currentPrice, simulationDate, "SP");
+                SellStock(ticker, timeOfPurchase, holding.StopProfit, simulationDate, "SP");
                 return true;
             }
 
-            UpdateStopProfit(ticker, timeOfPurchase, currentPrice);
+            UpdateStopProfit(ticker, timeOfPurchase, currentHigh);
             return false;
         }
 
@@ -150,7 +152,7 @@ namespace ConsoleApplication1
         {
             var holding = GetHolding(ticker, timeOfPurchase);
 
-            if (holding.StopProfit > 0.0 && currentHigh > calculatePricePlusPercentage(holding.Price, 2.5))
+            if (currentHigh > calculatePricePlusPercentage(holding.Price, 2.5))
             {
                 // Beregn ny StopProfit
                 var newStopProfit = calculatePriceMinusPercentage(currentHigh, 2.5);

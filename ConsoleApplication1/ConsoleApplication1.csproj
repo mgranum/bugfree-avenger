@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BuySignals.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Holding.cs" />

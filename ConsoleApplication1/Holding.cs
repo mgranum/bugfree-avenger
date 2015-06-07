@@ -15,5 +15,6 @@ namespace ConsoleApplication1
         public double TotalCost { get; set; }
         public double StopLoss { get; set; }
         public double StopProfit { get; set; }
+        public BuySignals BuySignals { get; set; }
     }
 }

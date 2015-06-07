@@ -14,10 +14,20 @@ namespace ConsoleApplication1
 
             var portfolio = new Portfolio();
 
-            //var stl = new Simulator("STL.OSE", portfolio);
+            var dnb = new Simulator("DNB.OSE", portfolio);
+            //dnb.Simulate();
+            var stl = new Simulator("STL.OSE", portfolio);
             //stl.Simulate();
-            //var yar = new Simulator("YAR.OSE", portfolio);
+            var subc = new Simulator("SUBC.OSE", portfolio);
+            //subc.Simulate();
+            var yar = new Simulator("YAR.OSE", portfolio);
             //yar.Simulate();
+            var mhg = new Simulator("MHG.OSE", portfolio);
+            //mhg.Simulate();
+            var nhy = new Simulator("NHY.OSE", portfolio);
+            //nhy.Simulate();
+            var tel = new Simulator("TEL.OSE", portfolio);
+            //tel.Simulate();
             var sdrl = new Simulator("SDRL.OSE", portfolio);
             sdrl.Simulate();
 
@@ -88,21 +98,21 @@ namespace ConsoleApplication1
             Console.WriteLine("Number of trades: {0}", portfolio.CompletedTransactions.Count);
             Console.WriteLine("Number of profitable trades: {0}", portfolio.CompletedTransactions.Count(d => d.Profit > 0.0));
             Console.WriteLine("Number of loosing trades: {0}", portfolio.CompletedTransactions.Count(d => d.Profit < 0.0));
-            Console.WriteLine("Greatest win: {0}", portfolio.CompletedTransactions.Max(d => d.Profit));
-            Console.WriteLine("Greatest loss: {0}", portfolio.CompletedTransactions.Min(d => d.Profit));
-            Console.WriteLine("Total profit: {0}", portfolio.CompletedTransactions.Sum(d => d.Profit));
+            Console.WriteLine("Greatest win: {0:0.00}", portfolio.CompletedTransactions.Max(d => d.Profit));
+            Console.WriteLine("Greatest loss: {0:0.00}", portfolio.CompletedTransactions.Min(d => d.Profit));
+            Console.WriteLine("Total profit: {0:0.00}", portfolio.CompletedTransactions.Sum(d => d.Profit));
             Console.WriteLine("===================");
 
-            foreach (var item in portfolio.CompletedTransactions)
-            {
-                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", 
-                    string.Format("{0:yyyyMMdd}", item.TimeOfPurchase), 
-                    string.Format("{0:0.00}", item.PurchasePrice), 
-                    string.Format("{0:yyyyMMdd}", item.TimeOfSell), 
-                    string.Format("{0:0.00}", item.SellPrice), 
-                    item.SellSignal,
-                    string.Format("{0:0.00}", item.Profit));
-            }
+            //foreach (var item in portfolio.CompletedTransactions)
+            //{
+            //    Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", 
+            //        string.Format("{0:yyyyMMdd}", item.TimeOfPurchase), 
+            //        string.Format("{0:0.00}", item.PurchasePrice), 
+            //        string.Format("{0:yyyyMMdd}", item.TimeOfSell), 
+            //        string.Format("{0:0.00}", item.SellPrice), 
+            //        item.SellSignal,
+            //        string.Format("{0:0.00}", item.Profit));
+            //}
 
             Console.ReadKey();
         }

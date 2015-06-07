@@ -11,13 +11,12 @@ namespace ConsoleApplication1
     public class Simulator
     {
         private List<Tick> history;
-        private List<Transaction> transactions;
         private Portfolio portfolio;
         private string ticker;
         private int today;
         private int yesterday;
-        private bool currentlyHolding;
         private double numberOfShares = 100.0;
+        private double amountPerTrade = 2500.0;
         private int numberOfHoldingDaysPerTrade = 4;
 
         public Simulator(string input, Portfolio portf)
@@ -39,10 +38,27 @@ namespace ConsoleApplication1
                 }
                 yesterday = today - 1;
 
-                if (CheckBuySignals())
+                var signals = CheckBuySignals();
+                if (signals.NumberOfSignals > 0)
                 {
                     // Buy
-                    portfolio.BuyStock(ticker, numberOfShares, history[today].Open, history[today].Timestamp);
+                    switch (signals.BuyAt)
+                    {
+                        case BuyAt.Open:
+                            numberOfShares = amountPerTrade / history[today].Open;
+                            portfolio.BuyStock(ticker, numberOfShares, history[today].Open, history[today].Timestamp, signals);
+                            break;
+                        case BuyAt.SpecificPrice:
+                            if (signals.BuyAtSpecificPrice > history[today].Low && signals.BuyAtSpecificPrice < history[today].High)
+                            {
+                                numberOfShares = amountPerTrade / signals.BuyAtSpecificPrice;
+                                portfolio.BuyStock(ticker, numberOfShares, signals.BuyAtSpecificPrice, history[today].Timestamp, signals);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    
                 }
 
                 var holdings = portfolio.GetHoldings(ticker);
@@ -70,30 +86,13 @@ namespace ConsoleApplication1
                     {
                         if (!portfolio.SellStockAtStopLoss(ticker, holding.TimeOfPurchase, history[today].Low, history[today].Timestamp))
                         {
-                            portfolio.SellStockAtStopProfit(ticker, holding.TimeOfPurchase, history[today].Low, history[today].Timestamp);
+                            portfolio.SellStockAtStopProfit(ticker, holding.TimeOfPurchase, history[today].Low, history[today].High, history[today].Timestamp);
 
                         }
                     }
                 }
 
             }
-        }
-
-        private bool ReachedMaximumNumberOfTradingDays(DateTime timeOfPurchase, DateTime today)
-        {
-            if (numberOfHoldingDaysPerTrade < 0) return false;
-
-            int count = 0;
-            for (DateTime index = timeOfPurchase; index < today; index = index.AddDays(1))
-            {
-                if (index.DayOfWeek == DayOfWeek.Saturday || index.DayOfWeek == DayOfWeek.Sunday) {
-
-                } else {
-                    count ++;
-                }
-            }
-
-            return count == numberOfHoldingDaysPerTrade;
         }
 
         private void ReadHistory()
@@ -134,17 +133,33 @@ namespace ConsoleApplication1
 
         }
 
-        private bool CheckBuySignals()
+        private BuySignals CheckBuySignals()
         {
             //return IsUptrendLongTerm() && HasDipShortTerm() && IsStochastic();
-            if (history[today].Timestamp == new DateTime(2007, 11, 2, 0, 0, 0))
+            if (history[today].Timestamp == new DateTime(2011, 9, 7, 0, 0, 0))
             {
                 var ugh = true;
             }
-            return IsOutsideDay();
-            //return IsStochastic();
-            //return IsMACDBreakthrough();
-            //return IsUptrendLongTerm() && HasDipShortTerm() && IsSmashDay();
+            var isGreatestSwingValue = IsGreatestSwingValue();
+            if (isGreatestSwingValue.Item1 == true && isGreatestSwingValue.Item2 > 0.0)
+            {
+                return new BuySignals
+                {
+                    IsGreatestSwingValue = true,
+                    BuyAt = BuyAt.SpecificPrice,
+                    BuyAtSpecificPrice = isGreatestSwingValue.Item2
+                };
+            } 
+
+            return new BuySignals
+            {
+                IsUptrendLongTerm_HasDipShortTerm_IsSmashDay = IsUptrendLongTerm() && HasDipShortTerm() && IsSmashDay(),
+                IsMACDBreakthrough = IsMACDBreakthrough(),
+                IsStochastic = IsStochastic(),
+                IsOutsideDay = IsOutsideDay(),
+                IsOoops_HasDipShortTerm = IsOoops() && HasDipShortTerm(),
+                BuyAt = BuyAt.Open
+            };
         }
 
         private bool IsUptrendLongTerm()
@@ -197,11 +212,29 @@ namespace ConsoleApplication1
             return (history[yesterday].High > highestHigh && history[yesterday].Low < lowestLow && history[yesterday].Close < history[yesterday].Open);
         }
 
-        private bool IsGreatestSwingValue()
+        private bool IsOoops()
+        {
+            // C=Open, D=High, E=Low
+            // =IF(AND(C2361<E2360;D2361>E2360;K2360<K2359);"YES";"")
+            return (history[yesterday].Open < history[yesterday - 1].Low && history[today].High > history[yesterday - 1].Low);
+        }
+
+        private Tuple<bool, double> IsGreatestSwingValue()
         {
             // =AND(D18>(C18+O17);F17<F12)
             // C=Open, D=High, E=Low, F=Close, O=SwingValueAverage
-            return false;
+            // BuyAt Open + SwingValueAverage
+            bool buy = false;
+            double price = 0.0;
+            if (history[yesterday].Close < history[yesterday - 5].Close)
+            {
+                if (history[today].High > (history[today].Open + history[yesterday].SwingValueAverage))
+                {
+                    buy = true;
+                    price = history[today].Open + history[yesterday].SwingValueAverage;
+                }
+            }
+            return Tuple.Create(buy, price); 
         }
     }
 }
